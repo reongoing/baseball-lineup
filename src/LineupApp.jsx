@@ -130,7 +130,7 @@ function FieldView({ players, positions, lineup = [], onPlayerTap = null }) {
   const LF_END = { x: -4,  y: 83 + (-4  - 50) / (26 - 50) * (61 - 83) }; // ≈ (-4, 33.5)
 
   return (
-    <div style={{ position: "relative", width: "100%", paddingBottom: "90%", background: "radial-gradient(ellipse at 50% 92%, #1e6b2f 0%, #114a1c 45%, #0a3212 70%, #071a0c 100%)", borderRadius: 14, overflow: "hidden", border: "2px solid #1e4a2a" }}>
+    <div style={{ position: "relative", width: "100%", aspectRatio: "10 / 9", background: "radial-gradient(ellipse at 50% 92%, #1e6b2f 0%, #114a1c 45%, #0a3212 70%, #071a0c 100%)", borderRadius: 14, overflow: "hidden", border: "2px solid #1e4a2a" }}>
       <svg
         viewBox="0 0 100 100"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
@@ -352,9 +352,9 @@ function SubModal({ sub, players, lineup, absent, availablePositions, onSave, on
               </select>
             </div>
             <div>
-              <label style={lbl}>守備ポジション（任意・未指定時はOUT選手のポジションを引き継ぎ）</label>
+              <label style={lbl}>守備ポジション（未指定時はOUT選手のポジションを引き継ぎ。変更する場合は明示的に選択）</label>
               <select style={inp} value={position} onChange={e => setPosition(e.target.value)}>
-                <option value="">— 引き継ぎ —</option>
+                <option value="">— OUT選手から引き継ぎ —</option>
                 {availablePositions.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
@@ -424,7 +424,9 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
   const [showLogout, setShowLogout]       = useState(false);
   const [importError, setImportError]     = useState("");
   const [importSuccess, setImportSuccess] = useState("");
+  const [swapConfirm, setSwapConfirm]     = useState(null); // { outPid, inPid, inName, outPos }
   const [fieldEditTarget, setFieldEditTarget] = useState(null); // { player, currentPos }
+  const [pendingBenchSwap, setPendingBenchSwap]   = useState(null); // { outPlayer, inPlayer, outPos }
   const [showShare, setShowShare]         = useState(false);
   const [showSubModal, setShowSubModal]     = useState(false);
   const [selectedSubGroup, setSelectedSubGroup] = useState(null); // null=先発, number=グループindex
@@ -1435,7 +1437,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
             {/* Mobile: grid list below field */}
             <div className="mobile-only" style={{ marginTop: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#7eb8ff", letterSpacing: 2, marginBottom: 10 }}>守備割り当て</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 14 }}>
                 {FIELD_POSITIONS.map(fp => { const h = getPositionHolder(fp.id); return (
                   <div key={fp.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 12px", background: h ? "rgba(0,180,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${h ? "rgba(0,180,255,0.2)" : "#1a2e50"}`, borderRadius: 10 }}>
                     <div style={{ width: 32, height: 32, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: "1px solid #243870", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0 }}>{fp.id}</div>
@@ -1444,6 +1446,40 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                 ); })}
               </div>
             </div>
+
+            {/* 控え・休み（PC/スマホ共通） */}
+            {currentGame && (benchPlayers.length > 0 || absentPlayers.length > 0) && (
+              <div style={{ display: "grid", gridTemplateColumns: benchPlayers.length > 0 && absentPlayers.length > 0 ? "1fr 1fr" : "1fr", gap: 10, marginTop: 4 }}>
+                {benchPlayers.length > 0 && (
+                  <div style={{ ...S.card, padding: "12px 14px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7eb8ff", letterSpacing: 2, marginBottom: 8 }}>控え ({benchPlayers.length})</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      {benchPlayers.map(p => (
+                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 8px", background: "rgba(255,255,255,0.03)", border: "1px solid #192e5a", borderRadius: 7 }}>
+                          <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#0c1e3a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#7eb8ff", flexShrink: 0 }}>#{p.number}</div>
+                          <span style={{ fontSize: 12, fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+                          {p.grade && <span className="grade-badge" style={{ fontSize: 9 }}>{p.grade}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {absentPlayers.length > 0 && (
+                  <div style={{ ...S.card, padding: "12px 14px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#ff8080", letterSpacing: 2, marginBottom: 8 }}>😴 休み ({absentPlayers.length})</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      {absentPlayers.map(p => (
+                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 8px", background: "rgba(255,80,80,0.05)", border: "1px solid rgba(255,100,100,0.2)", borderRadius: 7 }}>
+                          <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,80,80,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#ff8080", flexShrink: 0 }}>#{p.number}</div>
+                          <span style={{ fontSize: 12, fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#cc8888" }}>{p.name}</span>
+                          {p.grade && <span className="grade-badge" style={{ fontSize: 9 }}>{p.grade}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -1521,7 +1557,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                     players={players}
                     positions={applied.pos}
                     lineup={applied.lin}
-                    onPlayerTap={(player, pos) => setFieldEditTarget({ player, pos, groupIdx: selectedSubGroup, appliedPos: applied.pos })}
+                    onPlayerTap={(player, pos) => setFieldEditTarget({ player, pos, groupIdx: selectedSubGroup, appliedPos: applied.pos, appliedLin: applied.lin })}
                   />
                   <div style={{ fontSize:11, color:"#4a6a9a", textAlign:"center", marginTop:6 }}>
                     選手アイコンをタップして守備位置を変更できます
@@ -1577,24 +1613,59 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                               const inP  = players.find(p => p.id === ch.inPlayerId);
                               const pA   = players.find(p => p.id === ch.posPlayerA);
                               const pB   = players.find(p => p.id === ch.posPlayerB);
+                              // 元ポジション表示用の計算
+                              // posAtGroupStart: 前グループまで適用した状態（グループ開始時点）
+                              // posBeforeThis: グループ内のこの変更より前まで適用した状態
+                              const applyChangeFn = (np, prev) => {
+                                if ((prev.subType||"sub") === "posChange") {
+                                  if (prev.posPlayerA && prev.posPlayerB) { const a=np[prev.posPlayerA],b=np[prev.posPlayerB]; if(a)np[prev.posPlayerB]=a;else delete np[prev.posPlayerB]; if(b)np[prev.posPlayerA]=b;else delete np[prev.posPlayerA]; }
+                                  else if (prev.posPlayerA && prev.position) { Object.keys(np).forEach(k=>{if(np[k]===prev.position)delete np[k];}); np[prev.posPlayerA]=prev.position; }
+                                } else {
+                                  if (prev.outPlayerId && prev.inPlayerId) { const op=np[prev.outPlayerId],tp=prev.position||op; if(tp){Object.keys(np).forEach(k=>{if(np[k]===tp&&Number(k)!==prev.outPlayerId)delete np[k];}); np[prev.inPlayerId]=tp;} delete np[prev.outPlayerId]; }
+                                }
+                              };
+                              const posAtGroupStart = (() => {
+                                const np = { ...positions };
+                                groups.slice(0, gi).forEach(g => (g.changes||[]).forEach(prev => applyChangeFn(np, prev)));
+                                return np;
+                              })();
+                              const posBeforeThis = (() => {
+                                const np = { ...posAtGroupStart };
+                                (groups[gi]?.changes||[]).slice(0, ci).forEach(prev => applyChangeFn(np, prev));
+                                return np;
+                              })();
+                              // 元ポジションの取得: posBeforeThisで取れない場合はposAtGroupStartで補完
+                              const getOriginalPos = (pid) => posBeforeThis[pid] || posAtGroupStart[pid] || null;
                               return (
                                 <div key={ch.id || ci} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", background:"rgba(255,255,255,0.03)", border:"1px solid #192e5a", borderRadius:8 }}>
                                   <div style={{ flex:1, minWidth:0 }}>
                                     {(ch.subType || "sub") === "sub" ? (
-                                      <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-                                        <span style={{ fontSize:10, color:"#ff8080", background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.25)", borderRadius:4, padding:"1px 6px", flexShrink:0 }}>OUT</span>
-                                        <span style={{ fontSize:13, fontWeight:700, color:"#e8f0fe" }}>{outP ? `#${outP.number} ${outP.name}` : <span style={{ color:"#3a5a8a" }}>未設定</span>}</span>
-                                        <span style={{ color:"#4a6a9a" }}>→</span>
-                                        <span style={{ fontSize:10, color:"#00dc78", background:"rgba(0,220,120,0.1)", border:"1px solid rgba(0,220,120,0.25)", borderRadius:4, padding:"1px 6px", flexShrink:0 }}>IN</span>
-                                        <span style={{ fontSize:13, fontWeight:700, color:"#e8f0fe" }}>{inP ? `#${inP.number} ${inP.name}` : <span style={{ color:"#3a5a8a" }}>未設定</span>}</span>
-                                        {ch.position && <span style={{ fontSize:11, color:"#00e5ff" }}>→ {ch.position}</span>}
+                                      <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                                        <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                                          <span style={{ fontSize:10, color:"#ff8080", background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.25)", borderRadius:4, padding:"1px 6px", flexShrink:0 }}>OUT</span>
+                                          <span style={{ fontSize:13, fontWeight:700, color:"#e8f0fe" }}>{outP ? `#${outP.number} ${outP.name}` : <span style={{ color:"#3a5a8a" }}>未設定</span>}</span>
+                                          {outP && getOriginalPos(outP.id) && <span style={{ fontSize:11, color:"#ff8080", background:"rgba(255,80,80,0.08)", borderRadius:4, padding:"1px 5px" }}>{getOriginalPos(outP.id)}</span>}
+                                        </div>
+                                        <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                                          <span style={{ fontSize:10, color:"#00dc78", background:"rgba(0,220,120,0.1)", border:"1px solid rgba(0,220,120,0.25)", borderRadius:4, padding:"1px 6px", flexShrink:0 }}>IN</span>
+                                          <span style={{ fontSize:13, fontWeight:700, color:"#e8f0fe" }}>{inP ? `#${inP.number} ${inP.name}` : <span style={{ color:"#3a5a8a" }}>未設定</span>}</span>
+                                          {(() => { const newPos = ch.position || (outP && posBeforeThis[outP.id] ? posBeforeThis[outP.id] : null); return newPos ? <span style={{ fontSize:11, color:"#00e5ff", background:"rgba(0,229,255,0.08)", borderRadius:4, padding:"1px 5px" }}>{newPos}</span> : null; })()}
+                                        </div>
                                       </div>
                                     ) : (
-                                      <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-                                        <span style={{ fontSize:10, color:"#7eb8ff", background:"rgba(124,180,255,0.1)", border:"1px solid rgba(124,180,255,0.25)", borderRadius:4, padding:"1px 6px", flexShrink:0 }}>🔀守備</span>
-                                        <span style={{ fontSize:13, fontWeight:700, color:"#e8f0fe" }}>
-                                          {pB ? `${pA?.name||"?"} ⇄ ${pB?.name||"?"}` : `${pA?.name||"?"} → ${ch.position}`}
-                                        </span>
+                                      <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                                        <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                                          <span style={{ fontSize:10, color:"#7eb8ff", background:"rgba(124,180,255,0.1)", border:"1px solid rgba(124,180,255,0.25)", borderRadius:4, padding:"1px 6px", flexShrink:0 }}>🔀守備</span>
+                                          {pB ? (
+                                            <span style={{ fontSize:13, fontWeight:700, color:"#e8f0fe" }}>
+                                              {pA?.name||"?"}{getOriginalPos(pA?.id) ? <span style={{ fontSize:11, color:"#7eb8ff" }}>({getOriginalPos(pA.id)})</span> : ""} ⇄ {pB?.name||"?"}{getOriginalPos(pB?.id) ? <span style={{ fontSize:11, color:"#7eb8ff" }}>({getOriginalPos(pB.id)})</span> : ""}
+                                            </span>
+                                          ) : (
+                                            <span style={{ fontSize:13, fontWeight:700, color:"#e8f0fe" }}>
+                                              {pA?.name||"?"}{getOriginalPos(pA?.id) ? <span style={{ fontSize:11, color:"#7eb8ff" }}>({getOriginalPos(pA.id)})</span> : ""} → <span style={{ color:"#00e5ff" }}>{ch.position}</span>
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
                                     )}
                                     {ch.memo && <div style={{ fontSize:11, color:"#5a7aaa", marginTop:2 }}>📝 {ch.memo}</div>}
@@ -1803,8 +1874,8 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
 
         return (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 300 }}
-            onClick={() => setFieldEditTarget(null)}>
-            <div style={{ background: "#0d1e3a", border: "1px solid #1e3a6a", borderRadius: "20px 20px 0 0", padding: "20px 20px 44px", width: "100%", maxWidth: 480, fontFamily: "'Noto Sans JP', sans-serif" }}
+            onClick={() => { setFieldEditTarget(null); setPendingBenchSwap(null); }}>
+            <div style={{ background: "#0d1e3a", border: "1px solid #1e3a6a", borderRadius: "20px 20px 0 0", padding: "20px 20px 44px", width: "100%", maxWidth: 480, fontFamily: "'Noto Sans JP', sans-serif", maxHeight: "90vh", overflowY: "auto" }}
               onClick={e => e.stopPropagation()}>
               <div style={{ width: 40, height: 4, background: "#2a4a8a", borderRadius: 2, margin: "0 auto 18px" }} />
 
@@ -1879,8 +1950,135 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                 })}
               </div>
 
+              {/* 控え選手との入れ替え（交代タブ・スタメン選手のみ） */}
+              {isSubTab && fieldEditTarget.player && (() => {
+                const ap = fieldEditTarget.appliedPos || positions;
+                const al = fieldEditTarget.appliedLin || lineup;
+                const activeIds = al.filter(Boolean);
+                const isStarter = activeIds.includes(fieldEditTarget.player.id);
+                const subBench = players.filter(p => !activeIds.includes(p.id) && !absent.includes(p.id));
+                if (!isStarter || subBench.length === 0) return null;
+
+                // ステップ2: ポジション選択中
+                if (pendingBenchSwap && pendingBenchSwap.outPlayer.id === fieldEditTarget.player.id) {
+                  return (
+                    <div style={{ marginBottom: 14 }}>
+                      <button onClick={() => setPendingBenchSwap(null)}
+                        style={{ background:"none", border:"none", color:"#7eb8ff", fontSize:13, cursor:"pointer", fontFamily:"inherit", padding:"0 0 10px 0" }}>
+                        ← 控え選手選択に戻る
+                      </button>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#e8f0fe", marginBottom:10 }}>
+                        {pendingBenchSwap.inPlayer.name} の守備ポジション
+                      </div>
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:7, marginBottom:10 }}>
+                        {availablePositions.map(pos => (
+                          <button key={pos} onClick={() => {
+                            recordToGroup({
+                              subType: "sub",
+                              outPlayerId: pendingBenchSwap.outPlayer.id,
+                              inPlayerId:  pendingBenchSwap.inPlayer.id,
+                              position:    pos,
+                            });
+                            setPendingBenchSwap(null);
+                            setFieldEditTarget(null);
+                          }}
+                          style={{ padding:"10px 4px", border:`1px solid ${pos === pendingBenchSwap.outPos ? "#ffb400" : "#1e3a6a"}`, borderRadius:9, cursor:"pointer", fontFamily:"inherit", fontWeight:700, fontSize:13, background: pos === pendingBenchSwap.outPos ? "rgba(255,180,0,0.12)" : "rgba(255,255,255,0.04)", color: pos === pendingBenchSwap.outPos ? "#ffb400" : "#c0d8ff", display:"flex", flexDirection:"column", alignItems:"center", gap:2, WebkitTapHighlightColor:"transparent" }}>
+                            {pos}
+                            {pos === pendingBenchSwap.outPos && <span style={{ fontSize:8, color:"#ffb400" }}>元の守備</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // ステップ1: 控え選手選択
+                return (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#00dc78", letterSpacing: 1, marginBottom: 8 }}>
+                      🔄 控え選手と交代（グループに記録）
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {subBench.map(bp => {
+                        const outPos = ap[fieldEditTarget.player.id];
+                        return (
+                          <button key={bp.id}
+                            onClick={() => {
+                              // 控え選手を選択 → ポジション選択ステップへ
+                              setPendingBenchSwap({
+                                outPlayer: fieldEditTarget.player,
+                                inPlayer:  bp,
+                                outPos:    outPos || "",
+                              });
+                            }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "rgba(0,220,120,0.05)", border: "1px solid rgba(0,220,120,0.2)", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", textAlign: "left", WebkitTapHighlightColor: "transparent" }}>
+                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#0c3020", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#00dc78", flexShrink: 0 }}>#{bp.number}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: "#e8f0fe" }}>{bp.name}</div>
+                              {bp.grade && <div style={{ fontSize: 10, color: "#5a7aaa" }}>{bp.grade}</div>}
+                            </div>
+                            <div style={{ fontSize: 11, color: "#00dc78", flexShrink: 0 }}>
+                              {fieldEditTarget.player.name} と交代 →
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 控え選手との入れ替え（守備タブ・スタメン選手のみ） */}
+              {!isSubTab && fieldEditTarget.player && lineup.filter(Boolean).includes(fieldEditTarget.player.id) && benchPlayers.length > 0 && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7eb8ff", letterSpacing: 1, marginBottom: 8 }}>
+                    🔄 控え選手と入れ替え
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {benchPlayers.map(bp => {
+                      return (
+                        <button key={bp.id}
+                          onClick={() => {
+                            const hasGroups = (currentGame?.subGroups || []).length > 0;
+                            if (hasGroups) {
+                              // 交代グループがある場合は確認ダイアログを出す
+                              setSwapConfirm({
+                                outPid: fieldEditTarget.player.id,
+                                inPid:  bp.id,
+                                outName: fieldEditTarget.player.name,
+                                inName:  bp.name,
+                                outPos:  positions[fieldEditTarget.player.id],
+                              });
+                            } else {
+                              // 交代グループがない場合は直接実行
+                              const outPid = fieldEditTarget.player.id;
+                              const inPid  = bp.id;
+                              const newLineup = lineup.map(id => id === outPid ? inPid : id);
+                              const np = { ...positions };
+                              if (positions[outPid]) { np[inPid] = positions[outPid]; }
+                              delete np[outPid];
+                              updateGame({ lineup: newLineup, positions: np });
+                              setFieldEditTarget(null);
+                            }
+                          }}
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "rgba(255,255,255,0.04)", border: "1px solid #1e3a6a", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", textAlign: "left", WebkitTapHighlightColor: "transparent" }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#0c1e3a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#7eb8ff", flexShrink: 0 }}>#{bp.number}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#e8f0fe" }}>{bp.name}</div>
+                            {bp.grade && <div style={{ fontSize: 10, color: "#5a7aaa" }}>{bp.grade}</div>}
+                          </div>
+                          <div style={{ fontSize: 11, color: "#4a6a9a", flexShrink: 0 }}>
+                            {fieldEditTarget.player.name} と交代
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* 守備なし */}
-              {fieldEditTarget.player && (fieldEditTarget.appliedPos || positions)[fieldEditTarget.player.id] && (
+              {!isSubTab && fieldEditTarget.player && (fieldEditTarget.appliedPos || positions)[fieldEditTarget.player.id] && (
                 <button
                   onClick={() => { setPosition(fieldEditTarget.player.id, ""); setFieldEditTarget(null); }}
                   style={{ width: "100%", padding: "12px", background: "rgba(255,60,60,0.1)", border: "1px solid rgba(255,60,60,0.25)", borderRadius: 12, color: "#ff8080", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}>
@@ -1900,6 +2098,42 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
           </div>
         );
       })()}
+
+      {/* ── スタメン入れ替え確認ダイアログ ── */}
+      {swapConfirm !== null && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 400, padding: "0 20px" }}
+          onClick={() => setSwapConfirm(null)}>
+          <div style={{ background: "#0d1e3a", border: "1px solid #1e3a6a", borderRadius: 16, padding: "24px 20px", width: "100%", maxWidth: 380, fontFamily: "'Noto Sans JP', sans-serif" }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#e8f0fe", marginBottom: 12 }}>⚠️ 確認</div>
+            <div style={{ fontSize: 13, color: "#c0d8ff", marginBottom: 8, lineHeight: 1.7 }}>
+              <span style={{ color: "#ff8080", fontWeight: 700 }}>{swapConfirm.outName}</span> と <span style={{ color: "#00dc78", fontWeight: 700 }}>{swapConfirm.inName}</span> を入れ替えます。
+            </div>
+            <div style={{ fontSize: 12, color: "#ff8080", background: "rgba(255,60,60,0.08)", border: "1px solid rgba(255,60,60,0.2)", borderRadius: 9, padding: "10px 12px", marginBottom: 20 }}>
+              登録済みの交代予定グループがすべてクリアされます。よろしいですか？
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setSwapConfirm(null)}
+                style={{ flex: 1, padding: "12px", background: "#1a3260", border: "none", borderRadius: 10, color: "#7eb8ff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+                キャンセル
+              </button>
+              <button onClick={() => {
+                  const { outPid, inPid, outPos } = swapConfirm;
+                  const newLineup = lineup.map(id => id === outPid ? inPid : id);
+                  const np = { ...positions };
+                  if (outPos) { np[inPid] = outPos; }
+                  delete np[outPid];
+                  updateGame({ lineup: newLineup, positions: np, subGroups: [] });
+                  setSwapConfirm(null);
+                  setFieldEditTarget(null);
+                }}
+                style={{ flex: 2, padding: "12px", background: "linear-gradient(135deg,#cc2200,#8b1500)", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+                入れ替えて交代をクリア
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Player edit modal ── */}
       {editingPlayer && <PlayerEditModal player={editingPlayer} onSave={savePlayerEdit} onClose={() => setEditingPlayer(null)} />}
