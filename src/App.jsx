@@ -124,6 +124,7 @@ function ResetPasswordScreen({ onBack }) {
 // ─── ログイン・新規登録画面 ────────────────────────────────────────────────────
 function AuthScreen() {
   const [mode, setMode]         = useState("login");
+  const [noticeClosed, setNoticeClosed] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -148,7 +149,13 @@ function AuthScreen() {
 
   return (
     <div style={BASE.page}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&display=swap'); * { box-sizing: border-box; } input:focus { border-color: #4a8adc !important; outline: none; }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&display=swap'); * { box-sizing: border-box; } input:focus { border-color: #4a8adc !important; outline: none; } .app-notice { background: linear-gradient(90deg,#0a3020,#0d4a2a); border-bottom: 1px solid rgba(0,220,120,0.35); padding: 9px 40px 9px 16px; font-size: 12px; font-weight: 700; color: #00dc78; text-align: center; position: fixed; top: 0; left: 0; right: 0; z-index: 999; display: flex; align-items: center; justify-content: center; gap: 8px; } .app-notice-close { position: absolute; right: 10px; background: none; border: none; color: rgba(0,220,120,0.6); font-size: 16px; cursor: pointer; padding: 2px 6px; line-height: 1; font-family: inherit; } .app-notice-close:hover { color: #00dc78; }`}</style>
+      {!noticeClosed && (
+        <div className="app-notice">
+          🎉 現在試作運用中のため完全無料でフル機能利用可能。
+          <button className="app-notice-close" onClick={() => setNoticeClosed(true)}>×</button>
+        </div>
+      )}
       <div style={BASE.card}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><BaseballIcon size={38} /><span style={{ fontSize: 38, fontFamily: "'Bebas Neue'", letterSpacing: 4, background: "linear-gradient(90deg,#fff,#7eb8ff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>LINEUP CARD</span></div>
@@ -196,7 +203,13 @@ function AuthScreen() {
         {mode === "reset" && (
           <ResetPasswordScreen onBack={() => { setMode("login"); setError(""); }} />
         )}
+        <div style={{ textAlign: "center", marginTop: 16, fontSize: 12 }}>
+          <a href="https://baseball-lineup-app-3ffba.web.app/lp/" target="_blank" rel="noreferrer" style={{ color: "#5a7aaa", textDecoration: "none" }}>
+            📄 アプリについて詳しく見る
+          </a>
+        </div>
       </div>
+
     </div>
   );
 }
