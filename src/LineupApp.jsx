@@ -1091,6 +1091,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
 
   return (
     <div style={{ fontFamily: "'Noto Sans JP', sans-serif", minHeight: "100vh", background: C.bg, color: "#e8f0fe", paddingBottom: 72 }}>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1793,6 +1794,11 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
               style={{ width: "100%", padding: "12px 16px", background: "transparent", border: "none", borderBottom: "1px solid #1e3a6a", color: "#7eb8ff", fontSize: 14, fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}>
               ⚙️ アカウント設定
             </button>
+            <a href="https://baseball-lineup-app-3ffba.web.app/lp/" target="_blank" rel="noreferrer"
+              style={{ display: "block", padding: "12px 16px", borderBottom: "1px solid #1e3a6a", color: "#7eb8ff", fontSize: 14, textDecoration: "none" }}
+              onClick={() => setShowLogout(false)}>
+              📄 アプリ紹介ページ
+            </a>
             <button onClick={onLogout}
               style={{ width: "100%", padding: "12px 16px", background: "transparent", border: "none", color: "#ff8080", fontSize: 14, fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}>
               ログアウト

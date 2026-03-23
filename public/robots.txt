@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://baseball-lineup-app-3ffba.web.app/sitemap.xml
