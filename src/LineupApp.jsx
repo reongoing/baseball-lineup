@@ -7,6 +7,11 @@ const POSITION_LABELS = {
   P: "投手", C: "捕手", "1B": "一塁手", "2B": "二塁手", "3B": "三塁手",
   SS: "遊撃手", LF: "左翼手", CF: "中堅手", RF: "右翼手", DH: "指名打者",
 };
+// 表示用短縮名（日本語）
+const POS_SHORT = {
+  P: "投", C: "捕", "1B": "一", "2B": "二", "3B": "三",
+  SS: "遊", LF: "左", CF: "中", RF: "右", DH: "DH",
+};
 const FIELD_POSITIONS = [
   // 外野（さらに前進）
   { id: "CF", x: 50, y: 26 },
@@ -99,6 +104,38 @@ function BaseballIcon({ size = 28, style = {} }) {
     </svg>
   );
 }
+
+// ─── Stadium SVG Icon ─────────────────────────────────────────────────────────
+function StadiumIcon({ size = 20, style = {} }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, ...style }}>
+      {/* 外枠リング */}
+      <circle cx="20" cy="20" r="19" fill="#1e6b2f" stroke="#4caf50" strokeWidth="2"/>
+      <circle cx="20" cy="20" r="19" fill="none" stroke="#4caf50" strokeWidth="7"/>
+      {/* 芝フィールド */}
+      <circle cx="20" cy="20" r="12" fill="#1e6b2f"/>
+      {/* 内野土 */}
+      <polygon points="20,9 31,20 20,31 9,20" fill="#8b5e3c"/>
+      {/* マウンド */}
+      <circle cx="20" cy="20" r="2.5" fill="#a07040"/>
+      {/* 投手板 */}
+      <rect x="17.5" y="19" width="5" height="2" rx="0.5" fill="white" opacity="0.9"/>
+      {/* ホームプレート */}
+      <polygon points="20,29 17.5,26.5 17.5,24.5 22.5,24.5 22.5,26.5" fill="white"/>
+      {/* 1塁 */}
+      <rect x="25.5" y="17.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 27.5 19.5)"/>
+      {/* 2塁 */}
+      <rect x="17.5" y="8.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 19.5 10.5)"/>
+      {/* 3塁 */}
+      <rect x="9.5" y="17.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 11.5 19.5)"/>
+      {/* ファールライン左 */}
+      <line x1="20" y1="28" x2="4" y2="4" stroke="white" strokeWidth="0.8" opacity="0.6"/>
+      {/* ファールライン右 */}
+      <line x1="20" y1="28" x2="36" y2="4" stroke="white" strokeWidth="0.8" opacity="0.6"/>
+    </svg>
+  );
+}
+
 
 // ─── FieldView ────────────────────────────────────────────────────────────────
 // SVG座標系: viewBox="0 0 100 100"
@@ -212,7 +249,7 @@ function FieldView({ players, positions, lineup = [], onPlayerTap = null }) {
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
               boxShadow: h ? "0 0 14px rgba(0,180,255,0.55)" : "none", transition: "all 0.3s",
             }}>
-              <div style={{ fontSize: h ? 8 : 9, fontWeight: 900, color: h ? "#fff" : tappable ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.45)", lineHeight: 1 }}>{fp.id}</div>
+              <div style={{ fontSize: h ? 8 : 9, fontWeight: 900, color: h ? "#fff" : tappable ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.45)", lineHeight: 1 }}>{POS_SHORT[fp.id] || fp.id}</div>
               {h && <div style={{ fontSize: 7, color: "rgba(255,255,255,0.92)", marginTop: 2, lineHeight: 1, maxWidth: 40, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.name.split(" ").pop()}</div>}
               {!h && tappable && <div style={{ fontSize: 6, color: "rgba(255,255,255,0.4)", marginTop: 2, lineHeight: 1 }}>+</div>}
             </div>
@@ -355,7 +392,7 @@ function SubModal({ sub, players, lineup, absent, availablePositions, onSave, on
               <label style={lbl}>守備ポジション（未指定時はOUT選手のポジションを引き継ぎ。変更する場合は明示的に選択）</label>
               <select style={inp} value={position} onChange={e => setPosition(e.target.value)}>
                 <option value="">— OUT選手から引き継ぎ —</option>
-                {availablePositions.map(p => <option key={p} value={p}>{p}</option>)}
+                {availablePositions.map(p => <option key={p} value={p}>{POS_SHORT[p] || p}</option>)}
               </select>
             </div>
           </>)}
@@ -381,7 +418,7 @@ function SubModal({ sub, players, lineup, absent, availablePositions, onSave, on
                 <label style={lbl}>変更後のポジション（選手B未指定時は必須）</label>
                 <select style={inp} value={position} onChange={e => setPosition(e.target.value)}>
                   <option value="">— 選択してください —</option>
-                  {availablePositions.map(p => <option key={p} value={p}>{p}</option>)}
+                  {availablePositions.map(p => <option key={p} value={p}>{POS_SHORT[p] || p}</option>)}
                 </select>
               </div>
             )}
@@ -569,9 +606,9 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
            <text x="${cx + r - 2}" y="${cy - r + 6}" text-anchor="middle" font-size="9" font-weight="900" fill="#000" font-family="sans-serif">${batIdx + 1}</text>`
         : "";
       const label = h
-        ? `<text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="9" font-weight="900" fill="white" font-family="sans-serif">${fp.id}</text>
+        ? `<text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="9" font-weight="900" fill="white" font-family="sans-serif">${POS_SHORT[fp.id] || fp.id}</text>
            <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.9)" font-family="sans-serif">${h.name.split(" ").pop()}</text>`
-        : `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="9" font-weight="900" fill="rgba(255,255,255,0.4)" font-family="sans-serif">${fp.id}</text>`;
+        : `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="9" font-weight="900" fill="rgba(255,255,255,0.4)" font-family="sans-serif">${POS_SHORT[fp.id] || fp.id}</text>`;
       return `${glow}<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>${label}${batBadge}`;
     }).join("");
 
@@ -1096,7 +1133,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
     btnSm: { padding: "8px 14px", background: "linear-gradient(135deg,#1e6adc,#0d4aaa)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent" },
     btnDanger: { padding: "8px 14px", background: "rgba(255,60,60,0.12)", border: "1px solid rgba(255,60,60,0.25)", color: "#ff8080", borderRadius: 8, cursor: "pointer", fontSize: 13, fontFamily: "inherit" },
   };
-  const TABS = [["history","🗂","履歴"],["lineup","📋","打順"],["field","🏟","守備"],["sub","🔄","交代"],["roster","👥","選手"]];
+  const TABS = [["history","🗂","履歴"],["lineup","📋","打順"],["field","STADIUM","守備"],["sub","🔄","交代"],["roster","👥","選手"]];
   const saveLabel = { saving: "⏳ 保存中...", saved: "✓ 保存", error: "⚠️ 失敗" };
   const saveColor = { saving: "#7eb8ff", saved: "#00dc78", error: "#ff8080" };
 
@@ -1304,9 +1341,9 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                                 </div>
                                 <div style={{ display: "flex", gap: 5, alignItems: "center", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                                   <select value={positions[player.id] || ""} onChange={e => { e.stopPropagation(); setPosition(player.id, e.target.value); }}
-                                    style={{ background: "#091a38", color: positions[player.id] ? "#00e5ff" : "#3a5a8a", border: "1px solid #243870", borderRadius: 6, padding: "4px 5px", fontSize: 12, fontFamily: "inherit", cursor: "pointer", WebkitAppearance: "none" }}>
+                                    style={{ background: "#091a38", color: positions[player.id] ? "#00e5ff" : "#3a5a8a", border: "1px solid #243870", borderRadius: 6, padding: "4px 5px", fontSize: 13, fontFamily: "inherit", cursor: "pointer", WebkitAppearance: "none" }}>
                                     <option value="">守備—</option>
-                                    {availablePositions.map(p => <option key={p} value={p}>{p}</option>)}
+                                    {availablePositions.map(p => <option key={p} value={p}>{POS_SHORT[p] || p}</option>)}
                                   </select>
                                   <button onClick={e => { e.stopPropagation(); removeFromLineup(player.id); }} style={{ background: "rgba(255,60,60,0.1)", border: "1px solid rgba(255,60,60,0.2)", color: "#ff8080", borderRadius: 6, width: 24, height: 24, cursor: "pointer", fontSize: 13, lineHeight: "22px", flexShrink: 0 }}>×</button>
                                 </div>
@@ -1411,7 +1448,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                       {availablePositions.map(pos => { const h = getPositionHolder(pos); return (
                         <div key={pos} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: h ? "rgba(0,180,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${h ? "rgba(0,180,255,0.2)" : "#1a2e50"}`, borderRadius: 8 }}>
-                          <span style={{ fontWeight: 900, fontSize: 12, color: h ? "#00e5ff" : "#2a4a7a", width: 28, flexShrink: 0 }}>{pos}</span>
+                          <span style={{ fontWeight: 900, fontSize: 12, color: h ? "#00e5ff" : "#2a4a7a", width: 28, flexShrink: 0 }}>{POS_SHORT[pos] || pos}</span>
                           <span style={{ fontSize: 12, color: h ? "#c0d8ff" : "#2a4a7a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h ? h.name.split(" ").pop() : "—"}</span>
                         </div>
                       ); })}
@@ -1435,7 +1472,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                     const h = getPositionHolder(fp.id);
                     return (
                       <div key={fp.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #0c1e38" }}>
-                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: `1px solid ${h ? "#00e5ff55" : "#243870"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0, boxShadow: h ? "0 0 8px rgba(0,180,255,0.3)" : "none" }}>{fp.id}</div>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: `1px solid ${h ? "#00e5ff55" : "#243870"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0, boxShadow: h ? "0 0 8px rgba(0,180,255,0.3)" : "none" }}>{POS_SHORT[fp.id] || fp.id}</div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 10, color: "#4a6a9a" }}>{POSITION_LABELS[fp.id]}</div>
                           <div style={{ fontSize: 13, fontWeight: 700, color: h ? "#e8f0fe" : "#243870", marginTop: 1 }}>{h ? h.name : <span style={{ color: "#243870" }}>未配置</span>}</div>
@@ -1463,7 +1500,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 14 }}>
                 {FIELD_POSITIONS.map(fp => { const h = getPositionHolder(fp.id); return (
                   <div key={fp.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 12px", background: h ? "rgba(0,180,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${h ? "rgba(0,180,255,0.2)" : "#1a2e50"}`, borderRadius: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: "1px solid #243870", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0 }}>{fp.id}</div>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: "1px solid #243870", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0 }}>{POS_SHORT[fp.id] || fp.id}</div>
                     <div><div style={{ fontSize: 9, color: "#3a5a8a" }}>{POSITION_LABELS[fp.id]}</div><div style={{ fontSize: 12, fontWeight: 700, color: h ? "#e8f0fe" : "#243870" }}>{h ? h.name.split(" ").pop() : "未配置"}</div></div>
                   </div>
                 ); })}
@@ -1574,7 +1611,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                 {/* ── グラウンド配置図 ── */}
                 <div style={{ marginBottom:14 }}>
                   <div style={{ fontSize:11, fontWeight:700, color:"#7eb8ff", letterSpacing:2, marginBottom:8 }}>
-                    🏟 {selectedSubGroup===null ? "先発" : `${selectedSubGroup+1}回目交代後`}の守備配置
+                    <StadiumIcon size={14} style={{ display:"inline-block", verticalAlign:"middle", marginRight:4 }} /> {selectedSubGroup===null ? "先発" : `${selectedSubGroup+1}回目交代後`}の守備配置
                   </div>
                   <FieldView
                     players={players}
@@ -1771,7 +1808,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                         {hl && <span className="hand-badge">{hl}</span>}
                       </div>
                       <div style={{ fontSize: 11, color: isAbs ? "#ff8080" : "#4a6a9a", marginTop: 2 }}>
-                        {isAbs ? "😴 休み" : bi >= 0 ? `打順 ${bi+1}番` : "控え"}{pos ? `　${pos}` : ""}
+                        {isAbs ? "😴 休み" : bi >= 0 ? `打順 ${bi+1}番` : "控え"}{pos ? `　${POS_SHORT[pos] || pos}` : ""}
                       </div>
                     </div>
                     <button onClick={() => setEditingPlayer(p)} style={{ background: "rgba(0,180,255,0.1)", border: "1px solid rgba(0,180,255,0.25)", color: "#7eb8ff", borderRadius: 8, padding: "8px 10px", cursor: "pointer", fontSize: 16, flexShrink: 0, minWidth: 40, minHeight: 40 }}>✏️</button>
@@ -1797,7 +1834,10 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
         {TABS.map(([key, icon, label]) => (
           <button key={key} className="bottom-nav-btn" onClick={() => setActiveTab(key)}
             style={{ color: activeTab === key ? "#00b4ff" : "#4a6a9a" }}>
-            <span style={{ fontSize: 22 }}>{icon}</span>
+            {icon === "STADIUM"
+              ? <StadiumIcon size={24} />
+              : <span style={{ fontSize: 22 }}>{icon}</span>
+            }
             <span style={{ fontSize: 10, fontWeight: 700 }}>{label}</span>
             {activeTab === key && <div style={{ width: 20, height: 2, background: "#00b4ff", borderRadius: 1, position: "absolute", bottom: "calc(env(safe-area-inset-bottom) + 4px)" }} />}
           </button>
@@ -1910,7 +1950,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
               {/* ヘッダー */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#e8f0fe", marginBottom: 4 }}>
-                  🏟 守備ポジションを変更
+                  <StadiumIcon size={18} style={{ display:"inline-block", verticalAlign:"middle", marginRight:6 }} /> 守備ポジションを変更
                 </div>
                 {fieldEditTarget.player ? (
                   <div style={{ fontSize: 12, color: "#7eb8ff" }}>
@@ -1970,7 +2010,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
                         WebkitTapHighlightColor: "transparent",
                       }}>
-                      <span>{pos}</span>
+                      <span>{POS_SHORT[pos] || pos}</span>
                       {isOccupied && <span style={{ fontSize: 9, fontWeight: 400, color: "#ffb400" }}>{currentHolder.name.split(" ").pop()}</span>}
                       {isCurrentPos && <span style={{ fontSize: 9, fontWeight: 400, color: "#00e5ff" }}>現在</span>}
                     </button>
@@ -2180,7 +2220,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
             {/* タブ：テキスト / 画像 */}
             <>
               <div style={{ display: "flex", background: "#091a38", borderRadius: 10, padding: 3, marginBottom: 16 }}>
-              {[["text","📋 打順テキスト"],["image","🏟 守備配置画像"]].map(([key, label]) => (
+              {[["text","📋 打順テキスト"],["image","⬜ 守備配置画像"]].map(([key, label]) => (
           <button key={key} onClick={() => setShareTab(key)}
             style={{ flex: 1, padding: "9px", border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700, background: shareTab === key ? "linear-gradient(135deg,#1e4a9a,#0d2e6a)" : "transparent", color: shareTab === key ? "#fff" : "#4a6a9a", transition: "all 0.2s" }}>
             {label}
@@ -2217,7 +2257,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
               <>
           {/* 画像タイプ選択 */}
           <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-            {[["field", "🏟 守備配置のみ"], ["combined", "📋＋🏟 打順＋守備"]].map(([key, label]) => (
+            {[["field", "守備配置のみ"], ["combined", "📋＋守備"]].map(([key, label]) => (
               <button key={key} onClick={() => { setFieldImgUrl(null); setCombinedMode(key === "combined"); }}
                 style={{ flex: 1, padding: "9px 6px", border: `1px solid ${combinedMode === (key === "combined") ? "#00b4ff" : "#1e3a6a"}`, borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: combinedMode === (key === "combined") ? "rgba(0,180,255,0.12)" : "rgba(255,255,255,0.04)", color: combinedMode === (key === "combined") ? "#00b4ff" : "#6a8ab0", transition: "all 0.2s" }}>
                 {label}

@@ -579,8 +579,8 @@
         <div class="stat-label">円 完全無料</div>
       </div>
       <div>
-        <div class="stat-num" style="font-size:32px;">スマホ<br>/ PC</div>
-        <div class="stat-label" style="font-size:10px">どちらでも使える</div>
+        <div class="stat-num" style="font-size:28px;">PWA<br>対応</div>
+        <div class="stat-label" style="font-size:10px">スマホ・PCにインストール可</div>
       </div>
       <div>
         <div class="stat-num">LINE</div>
@@ -602,7 +602,22 @@
         <span class="feature-tag">スマホ・PC対応</span>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">🏟</div>
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="19" fill="#1e6b2f" stroke="#4caf50" stroke-width="2"/>
+            <circle cx="20" cy="20" r="19" fill="none" stroke="#4caf50" stroke-width="7"/>
+            <circle cx="20" cy="20" r="12" fill="#1e6b2f"/>
+            <polygon points="20,9 31,20 20,31 9,20" fill="#8b5e3c"/>
+            <circle cx="20" cy="20" r="2.5" fill="#a07040"/>
+            <rect x="17.5" y="19" width="5" height="2" rx="0.5" fill="white" opacity="0.9"/>
+            <polygon points="20,29 17.5,26.5 17.5,24.5 22.5,24.5 22.5,26.5" fill="white"/>
+            <rect x="25.5" y="17.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 27.5 19.5)"/>
+            <rect x="17.5" y="8.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 19.5 10.5)"/>
+            <rect x="9.5" y="17.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 11.5 19.5)"/>
+            <line x1="20" y1="28" x2="4" y2="4" stroke="white" stroke-width="0.8" opacity="0.6"/>
+            <line x1="20" y1="28" x2="36" y2="4" stroke="white" stroke-width="0.8" opacity="0.6"/>
+          </svg>
+        </div>
         <div class="feature-title">グラウンド配置図</div>
         <div class="feature-desc">SVGベースのリアルなグラウンド図で守備配置を確認。打順番号バッジも表示。配置図をタップして守備ポジションをその場で変更。</div>
         <span class="feature-tag">ビジュアル確認</span>
@@ -631,6 +646,25 @@
         <div class="feature-desc">背番号・学年・投打を登録して学年フィルターで絞り込み。CSVでエクスポート・インポートにも対応。引き継ぎもスムーズ。</div>
         <span class="feature-tag">CSV対応</span>
       </div>
+      <div class="feature-card">
+        <div class="feature-icon">⬇️</div>
+        <div class="feature-title">スマホ・PCにインストール可能</div>
+        <div class="feature-desc">
+          WebアプリなのにPWA対応。PCのChromeではアドレスバーのインストールボタンからデスクトップアプリとして追加可能。スマホはホーム画面に追加してネイティブアプリのように使えます。
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#c0d8ff;">
+              <span style="font-size:14px;">🖥</span> PC（Chrome）：アドレスバーの ⬇️ からインストール
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#c0d8ff;">
+              <span style="font-size:14px;">📱</span> iPhone（Safari）：共有ボタン →「ホーム画面に追加」
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#c0d8ff;">
+              <span style="font-size:14px;">🤖</span> Android（Chrome）：メニュー →「ホーム画面に追加」
+            </div>
+          </div>
+        </div>
+        <span class="feature-tag">PWA対応</span>
+      </div>
     </div>
   </section>
 
@@ -645,7 +679,7 @@
           <div class="step-num">1</div>
           <div class="step-body">
             <div class="step-title">アカウントを作成する</div>
-            <div class="step-desc">メールアドレスとパスワードでサインアップ。チーム名を登録すれば準備完了。PCブラウザからもそのままご利用いただけます。スマホはホーム画面に追加してアプリのように使えます。</div>
+            <div class="step-desc">メールアドレスとパスワードでサインアップ。チーム名を登録すれば準備完了。PCブラウザ（Chrome）ではアドレスバーの「⬇️ インストール」ボタンからデスクトップアプリとしてインストール可能。スマホはホーム画面に追加してアプリのように使えます。</div>
           </div>
         </div>
         <div class="step">
@@ -664,6 +698,16 @@
         </div>
         <div class="step">
           <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">⬇️ アプリとしてインストール（任意）</div>
+            <div class="step-desc">
+              <strong style="color:#00b4ff;">PC（Chrome）</strong>：アドレスバー右端の「⬇️」アイコンをクリック → 「インストール」でデスクトップアプリとして使えます。<br/>
+              <strong style="color:#00b4ff;">スマホ</strong>：Safariの共有ボタン →「ホーム画面に追加」（iOS）、またはChromeメニュー →「ホーム画面に追加」（Android）。
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
           <div class="step-body">
             <div class="step-title">📤 ボタンでLINEに共有</div>
             <div class="step-desc">打順テキストまたは守備配置画像をワンタップでLINEに送信。試合前にコーチ・保護者全員にすぐ伝わります。</div>
@@ -688,7 +732,7 @@
       </div>
       <div class="faq-item">
         <div class="faq-q">iPhoneでもAndroidでも使えますか？</div>
-        <div class="faq-a">はい。WebアプリのためiPhone（Safari）・Android（Chrome）・PCブラウザ（Chrome・Safari・Edge）いずれでも動作します。スマホは「ホーム画面に追加」することでアプリのようにご利用いただけます。</div>
+        <div class="faq-a">はい。WebアプリのためiPhone（Safari）・Android（Chrome）・PCブラウザ（Chrome・Safari・Edge）いずれでも動作します。スマホは「ホーム画面に追加」、PCのChromeはアドレスバーのインストールボタンからデスクトップアプリとしてインストールできます。</div>
       </div>
       <div class="faq-item">
         <div class="faq-q">過去のスタメンデータは残りますか？</div>
