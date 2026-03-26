@@ -7,6 +7,11 @@ const POSITION_LABELS = {
   P: "投手", C: "捕手", "1B": "一塁手", "2B": "二塁手", "3B": "三塁手",
   SS: "遊撃手", LF: "左翼手", CF: "中堅手", RF: "右翼手", DH: "指名打者",
 };
+// 表示用短縮名（日本語）
+const POS_SHORT = {
+  P: "投", C: "捕", "1B": "一", "2B": "二", "3B": "三",
+  SS: "遊", LF: "左", CF: "中", RF: "右", DH: "DH",
+};
 const FIELD_POSITIONS = [
   // 外野（さらに前進）
   { id: "CF", x: 50, y: 26 },
@@ -244,7 +249,7 @@ function FieldView({ players, positions, lineup = [], onPlayerTap = null }) {
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
               boxShadow: h ? "0 0 14px rgba(0,180,255,0.55)" : "none", transition: "all 0.3s",
             }}>
-              <div style={{ fontSize: h ? 8 : 9, fontWeight: 900, color: h ? "#fff" : tappable ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.45)", lineHeight: 1 }}>{fp.id}</div>
+              <div style={{ fontSize: h ? 8 : 9, fontWeight: 900, color: h ? "#fff" : tappable ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.45)", lineHeight: 1 }}>{POS_SHORT[fp.id] || fp.id}</div>
               {h && <div style={{ fontSize: 7, color: "rgba(255,255,255,0.92)", marginTop: 2, lineHeight: 1, maxWidth: 40, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.name.split(" ").pop()}</div>}
               {!h && tappable && <div style={{ fontSize: 6, color: "rgba(255,255,255,0.4)", marginTop: 2, lineHeight: 1 }}>+</div>}
             </div>
@@ -387,7 +392,7 @@ function SubModal({ sub, players, lineup, absent, availablePositions, onSave, on
               <label style={lbl}>守備ポジション（未指定時はOUT選手のポジションを引き継ぎ。変更する場合は明示的に選択）</label>
               <select style={inp} value={position} onChange={e => setPosition(e.target.value)}>
                 <option value="">— OUT選手から引き継ぎ —</option>
-                {availablePositions.map(p => <option key={p} value={p}>{p}</option>)}
+                {availablePositions.map(p => <option key={p} value={p}>{POS_SHORT[p] || p}</option>)}
               </select>
             </div>
           </>)}
@@ -413,7 +418,7 @@ function SubModal({ sub, players, lineup, absent, availablePositions, onSave, on
                 <label style={lbl}>変更後のポジション（選手B未指定時は必須）</label>
                 <select style={inp} value={position} onChange={e => setPosition(e.target.value)}>
                   <option value="">— 選択してください —</option>
-                  {availablePositions.map(p => <option key={p} value={p}>{p}</option>)}
+                  {availablePositions.map(p => <option key={p} value={p}>{POS_SHORT[p] || p}</option>)}
                 </select>
               </div>
             )}
@@ -601,9 +606,9 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
            <text x="${cx + r - 2}" y="${cy - r + 6}" text-anchor="middle" font-size="9" font-weight="900" fill="#000" font-family="sans-serif">${batIdx + 1}</text>`
         : "";
       const label = h
-        ? `<text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="9" font-weight="900" fill="white" font-family="sans-serif">${fp.id}</text>
+        ? `<text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="9" font-weight="900" fill="white" font-family="sans-serif">${POS_SHORT[fp.id] || fp.id}</text>
            <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.9)" font-family="sans-serif">${h.name.split(" ").pop()}</text>`
-        : `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="9" font-weight="900" fill="rgba(255,255,255,0.4)" font-family="sans-serif">${fp.id}</text>`;
+        : `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="9" font-weight="900" fill="rgba(255,255,255,0.4)" font-family="sans-serif">${POS_SHORT[fp.id] || fp.id}</text>`;
       return `${glow}<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>${label}${batBadge}`;
     }).join("");
 
@@ -1336,9 +1341,9 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                                 </div>
                                 <div style={{ display: "flex", gap: 5, alignItems: "center", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                                   <select value={positions[player.id] || ""} onChange={e => { e.stopPropagation(); setPosition(player.id, e.target.value); }}
-                                    style={{ background: "#091a38", color: positions[player.id] ? "#00e5ff" : "#3a5a8a", border: "1px solid #243870", borderRadius: 6, padding: "4px 5px", fontSize: 12, fontFamily: "inherit", cursor: "pointer", WebkitAppearance: "none" }}>
+                                    style={{ background: "#091a38", color: positions[player.id] ? "#00e5ff" : "#3a5a8a", border: "1px solid #243870", borderRadius: 6, padding: "4px 5px", fontSize: 13, fontFamily: "inherit", cursor: "pointer", WebkitAppearance: "none" }}>
                                     <option value="">守備—</option>
-                                    {availablePositions.map(p => <option key={p} value={p}>{p}</option>)}
+                                    {availablePositions.map(p => <option key={p} value={p}>{POS_SHORT[p] || p}</option>)}
                                   </select>
                                   <button onClick={e => { e.stopPropagation(); removeFromLineup(player.id); }} style={{ background: "rgba(255,60,60,0.1)", border: "1px solid rgba(255,60,60,0.2)", color: "#ff8080", borderRadius: 6, width: 24, height: 24, cursor: "pointer", fontSize: 13, lineHeight: "22px", flexShrink: 0 }}>×</button>
                                 </div>
@@ -1443,7 +1448,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                       {availablePositions.map(pos => { const h = getPositionHolder(pos); return (
                         <div key={pos} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: h ? "rgba(0,180,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${h ? "rgba(0,180,255,0.2)" : "#1a2e50"}`, borderRadius: 8 }}>
-                          <span style={{ fontWeight: 900, fontSize: 12, color: h ? "#00e5ff" : "#2a4a7a", width: 28, flexShrink: 0 }}>{pos}</span>
+                          <span style={{ fontWeight: 900, fontSize: 12, color: h ? "#00e5ff" : "#2a4a7a", width: 28, flexShrink: 0 }}>{POS_SHORT[pos] || pos}</span>
                           <span style={{ fontSize: 12, color: h ? "#c0d8ff" : "#2a4a7a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h ? h.name.split(" ").pop() : "—"}</span>
                         </div>
                       ); })}
@@ -1467,7 +1472,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                     const h = getPositionHolder(fp.id);
                     return (
                       <div key={fp.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #0c1e38" }}>
-                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: `1px solid ${h ? "#00e5ff55" : "#243870"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0, boxShadow: h ? "0 0 8px rgba(0,180,255,0.3)" : "none" }}>{fp.id}</div>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: `1px solid ${h ? "#00e5ff55" : "#243870"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0, boxShadow: h ? "0 0 8px rgba(0,180,255,0.3)" : "none" }}>{POS_SHORT[fp.id] || fp.id}</div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 10, color: "#4a6a9a" }}>{POSITION_LABELS[fp.id]}</div>
                           <div style={{ fontSize: 13, fontWeight: 700, color: h ? "#e8f0fe" : "#243870", marginTop: 1 }}>{h ? h.name : <span style={{ color: "#243870" }}>未配置</span>}</div>
@@ -1495,7 +1500,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 14 }}>
                 {FIELD_POSITIONS.map(fp => { const h = getPositionHolder(fp.id); return (
                   <div key={fp.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 12px", background: h ? "rgba(0,180,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${h ? "rgba(0,180,255,0.2)" : "#1a2e50"}`, borderRadius: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: "1px solid #243870", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0 }}>{fp.id}</div>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: h ? "linear-gradient(135deg,#00b4ff,#0055cc)" : "#0c1e3a", border: "1px solid #243870", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: h ? "#fff" : "#2a4a7a", flexShrink: 0 }}>{POS_SHORT[fp.id] || fp.id}</div>
                     <div><div style={{ fontSize: 9, color: "#3a5a8a" }}>{POSITION_LABELS[fp.id]}</div><div style={{ fontSize: 12, fontWeight: 700, color: h ? "#e8f0fe" : "#243870" }}>{h ? h.name.split(" ").pop() : "未配置"}</div></div>
                   </div>
                 ); })}
@@ -1803,7 +1808,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                         {hl && <span className="hand-badge">{hl}</span>}
                       </div>
                       <div style={{ fontSize: 11, color: isAbs ? "#ff8080" : "#4a6a9a", marginTop: 2 }}>
-                        {isAbs ? "😴 休み" : bi >= 0 ? `打順 ${bi+1}番` : "控え"}{pos ? `　${pos}` : ""}
+                        {isAbs ? "😴 休み" : bi >= 0 ? `打順 ${bi+1}番` : "控え"}{pos ? `　${POS_SHORT[pos] || pos}` : ""}
                       </div>
                     </div>
                     <button onClick={() => setEditingPlayer(p)} style={{ background: "rgba(0,180,255,0.1)", border: "1px solid rgba(0,180,255,0.25)", color: "#7eb8ff", borderRadius: 8, padding: "8px 10px", cursor: "pointer", fontSize: 16, flexShrink: 0, minWidth: 40, minHeight: 40 }}>✏️</button>
@@ -2005,7 +2010,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
                         WebkitTapHighlightColor: "transparent",
                       }}>
-                      <span>{pos}</span>
+                      <span>{POS_SHORT[pos] || pos}</span>
                       {isOccupied && <span style={{ fontSize: 9, fontWeight: 400, color: "#ffb400" }}>{currentHolder.name.split(" ").pop()}</span>}
                       {isCurrentPos && <span style={{ fontSize: 9, fontWeight: 400, color: "#00e5ff" }}>現在</span>}
                     </button>
