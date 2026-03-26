@@ -1336,8 +1336,13 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                                 </button>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: 1 }}>
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#0c1e3a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#7eb8ff", flexShrink: 0 }}>#{player.number}</div>
-                                  <span style={{ fontWeight: 700, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{player.name}</span>
-                                  {player.grade && <span className="grade-badge" style={{ flexShrink: 0 }}>{player.grade}</span>}
+                                  <div style={{ minWidth: 0 }}>
+                                    <span style={{ fontWeight: 700, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{player.name}</span>
+                                    {player.grade && <span className="grade-badge" style={{ flexShrink: 0, marginLeft: 4 }}>{player.grade}</span>}
+                                    {handLabel(player.throwHand || "", player.batHand || "") && (
+                                      <div style={{ fontSize: 10, color: "#5a7aaa", marginTop: 1, lineHeight: 1 }}>{handLabel(player.throwHand || "", player.batHand || "")}</div>
+                                    )}
+                                  </div>
                                 </div>
                                 <div style={{ display: "flex", gap: 5, alignItems: "center", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                                   <select value={positions[player.id] || ""} onChange={e => { e.stopPropagation(); setPosition(player.id, e.target.value); }}
@@ -1401,7 +1406,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                       <div style={{ fontSize: 10, color: "#7eb8ff", fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>守備配置</div>
                       {availablePositions.map(pos => { const h = getPositionHolder(pos); return (
                         <div key={pos} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "3px 0", borderBottom: "1px solid #0c1e38" }}>
-                          <span style={{ fontWeight: 700, width: 28, color: h ? "#00e5ff" : "#243870" }}>{pos}</span>
+                          <span style={{ fontWeight: 700, width: 28, color: h ? "#00e5ff" : "#243870" }}>{POS_SHORT[pos] || pos}</span>
                           <span style={{ color: h ? "#c0d8ff" : "#243870" }}>{h ? h.name : "—"}</span>
                         </div>
                       ); })}
