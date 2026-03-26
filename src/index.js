@@ -9,9 +9,9 @@ root.render(
   </React.StrictMode>
 );
 
-// Service Workerを無効化（キャッシュ問題の防止）
+// Service Worker 登録（PWAインストール対応・キャッシュなし）
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => registration.unregister());
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
   });
 }

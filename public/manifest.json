@@ -1,0 +1,17 @@
+{
+  "name": "LINEUP CARD",
+  "short_name": "LINEUP CARD",
+  "description": "少年野球スタメン作成アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

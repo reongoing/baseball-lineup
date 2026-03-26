@@ -422,6 +422,21 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [rosterFilter, setRosterFilter]   = useState("");
   const [showLogout, setShowLogout]       = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  // PWAインストールプロンプトを保持
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") setInstallPrompt(null);
+  };
   const [importError, setImportError]     = useState("");
   const [importSuccess, setImportSuccess] = useState("");
   const [swapConfirm, setSwapConfirm]     = useState(null); // { outPid, inPid, inName, outPos }
@@ -1147,6 +1162,13 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                 <span>📤</span><span className="btn-label-pc">共有</span>
               </button>
             </>
+          )}
+          {installPrompt && (
+            <button onClick={handleInstall}
+              title="アプリをインストール"
+              style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 12px", height: 36, background: "rgba(0,180,255,0.12)", border: "1px solid rgba(0,180,255,0.35)", borderRadius: 8, color: "#00b4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, WebkitTapHighlightColor: "transparent" }}>
+              ⬇️ <span className="btn-label-pc">インストール</span>
+            </button>
           )}
           <button onClick={() => setShowLogout(true)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid #1e3a6a", color: "#7eb8ff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>≡</button>
         </div>
