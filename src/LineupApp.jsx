@@ -100,6 +100,38 @@ function BaseballIcon({ size = 28, style = {} }) {
   );
 }
 
+// ─── Stadium SVG Icon ─────────────────────────────────────────────────────────
+function StadiumIcon({ size = 20, style = {} }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, ...style }}>
+      {/* 外枠リング */}
+      <circle cx="20" cy="20" r="19" fill="#1e6b2f" stroke="#4caf50" strokeWidth="2"/>
+      <circle cx="20" cy="20" r="19" fill="none" stroke="#4caf50" strokeWidth="7"/>
+      {/* 芝フィールド */}
+      <circle cx="20" cy="20" r="12" fill="#1e6b2f"/>
+      {/* 内野土 */}
+      <polygon points="20,9 31,20 20,31 9,20" fill="#8b5e3c"/>
+      {/* マウンド */}
+      <circle cx="20" cy="20" r="2.5" fill="#a07040"/>
+      {/* 投手板 */}
+      <rect x="17.5" y="19" width="5" height="2" rx="0.5" fill="white" opacity="0.9"/>
+      {/* ホームプレート */}
+      <polygon points="20,29 17.5,26.5 17.5,24.5 22.5,24.5 22.5,26.5" fill="white"/>
+      {/* 1塁 */}
+      <rect x="25.5" y="17.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 27.5 19.5)"/>
+      {/* 2塁 */}
+      <rect x="17.5" y="8.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 19.5 10.5)"/>
+      {/* 3塁 */}
+      <rect x="9.5" y="17.5" width="4" height="4" rx="0.5" fill="white" transform="rotate(45 11.5 19.5)"/>
+      {/* ファールライン左 */}
+      <line x1="20" y1="28" x2="4" y2="4" stroke="white" strokeWidth="0.8" opacity="0.6"/>
+      {/* ファールライン右 */}
+      <line x1="20" y1="28" x2="36" y2="4" stroke="white" strokeWidth="0.8" opacity="0.6"/>
+    </svg>
+  );
+}
+
+
 // ─── FieldView ────────────────────────────────────────────────────────────────
 // SVG座標系: viewBox="0 0 100 100"
 // ベース位置（実際の野球場の比率に基づく）
@@ -1096,7 +1128,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
     btnSm: { padding: "8px 14px", background: "linear-gradient(135deg,#1e6adc,#0d4aaa)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent" },
     btnDanger: { padding: "8px 14px", background: "rgba(255,60,60,0.12)", border: "1px solid rgba(255,60,60,0.25)", color: "#ff8080", borderRadius: 8, cursor: "pointer", fontSize: 13, fontFamily: "inherit" },
   };
-  const TABS = [["history","🗂","履歴"],["lineup","📋","打順"],["field","🏟","守備"],["sub","🔄","交代"],["roster","👥","選手"]];
+  const TABS = [["history","🗂","履歴"],["lineup","📋","打順"],["field","STADIUM","守備"],["sub","🔄","交代"],["roster","👥","選手"]];
   const saveLabel = { saving: "⏳ 保存中...", saved: "✓ 保存", error: "⚠️ 失敗" };
   const saveColor = { saving: "#7eb8ff", saved: "#00dc78", error: "#ff8080" };
 
@@ -1574,7 +1606,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
                 {/* ── グラウンド配置図 ── */}
                 <div style={{ marginBottom:14 }}>
                   <div style={{ fontSize:11, fontWeight:700, color:"#7eb8ff", letterSpacing:2, marginBottom:8 }}>
-                    🏟 {selectedSubGroup===null ? "先発" : `${selectedSubGroup+1}回目交代後`}の守備配置
+                    <StadiumIcon size={14} style={{ display:"inline-block", verticalAlign:"middle", marginRight:4 }} /> {selectedSubGroup===null ? "先発" : `${selectedSubGroup+1}回目交代後`}の守備配置
                   </div>
                   <FieldView
                     players={players}
@@ -1797,7 +1829,10 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
         {TABS.map(([key, icon, label]) => (
           <button key={key} className="bottom-nav-btn" onClick={() => setActiveTab(key)}
             style={{ color: activeTab === key ? "#00b4ff" : "#4a6a9a" }}>
-            <span style={{ fontSize: 22 }}>{icon}</span>
+            {icon === "STADIUM"
+              ? <StadiumIcon size={24} />
+              : <span style={{ fontSize: 22 }}>{icon}</span>
+            }
             <span style={{ fontSize: 10, fontWeight: 700 }}>{label}</span>
             {activeTab === key && <div style={{ width: 20, height: 2, background: "#00b4ff", borderRadius: 1, position: "absolute", bottom: "calc(env(safe-area-inset-bottom) + 4px)" }} />}
           </button>
@@ -1910,7 +1945,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
               {/* ヘッダー */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#e8f0fe", marginBottom: 4 }}>
-                  🏟 守備ポジションを変更
+                  <StadiumIcon size={18} style={{ display:"inline-block", verticalAlign:"middle", marginRight:6 }} /> 守備ポジションを変更
                 </div>
                 {fieldEditTarget.player ? (
                   <div style={{ fontSize: 12, color: "#7eb8ff" }}>
@@ -2180,7 +2215,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
             {/* タブ：テキスト / 画像 */}
             <>
               <div style={{ display: "flex", background: "#091a38", borderRadius: 10, padding: 3, marginBottom: 16 }}>
-              {[["text","📋 打順テキスト"],["image","🏟 守備配置画像"]].map(([key, label]) => (
+              {[["text","📋 打順テキスト"],["image","⬜ 守備配置画像"]].map(([key, label]) => (
           <button key={key} onClick={() => setShareTab(key)}
             style={{ flex: 1, padding: "9px", border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700, background: shareTab === key ? "linear-gradient(135deg,#1e4a9a,#0d2e6a)" : "transparent", color: shareTab === key ? "#fff" : "#4a6a9a", transition: "all 0.2s" }}>
             {label}
@@ -2217,7 +2252,7 @@ export default function LineupApp({ user, onLogout, onOpenSettings }) {
               <>
           {/* 画像タイプ選択 */}
           <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-            {[["field", "🏟 守備配置のみ"], ["combined", "📋＋🏟 打順＋守備"]].map(([key, label]) => (
+            {[["field", "守備配置のみ"], ["combined", "📋＋守備"]].map(([key, label]) => (
               <button key={key} onClick={() => { setFieldImgUrl(null); setCombinedMode(key === "combined"); }}
                 style={{ flex: 1, padding: "9px 6px", border: `1px solid ${combinedMode === (key === "combined") ? "#00b4ff" : "#1e3a6a"}`, borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: combinedMode === (key === "combined") ? "rgba(0,180,255,0.12)" : "rgba(255,255,255,0.04)", color: combinedMode === (key === "combined") ? "#00b4ff" : "#6a8ab0", transition: "all 0.2s" }}>
                 {label}
